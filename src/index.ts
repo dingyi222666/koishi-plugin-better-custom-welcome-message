@@ -177,7 +177,6 @@ async function selectMessage(session: Session<never, never>, config: Config, eve
 
     const index = await session.resolve(selector)
 
-    console.log(`index: ${index}`)
     if (index == 0) {
         return messages[Math.floor(Math.random() * messages.length)]
     } else {

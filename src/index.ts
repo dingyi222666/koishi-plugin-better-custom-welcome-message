@@ -99,8 +99,6 @@ async function formatMessage(ctx: Context, session: Session, markdownText: strin
 
     const groupMemberCount = (await session.bot.getGuildMemberList(session.guildId)).length
 
-    console.log(groupMemberCount)
-
     markdownText = markdownText.replace(/{user}/g, session.username)
         .replace(/{group}/g, session.guildName || '')
         .replace(/{time}/g, new Date().toLocaleString())

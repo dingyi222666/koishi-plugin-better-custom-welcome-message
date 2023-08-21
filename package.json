@@ -1,41 +1,40 @@
 {
-    "name": "koishi-plugin-better-custom-welcome-message",
-    "description": "better custom welcome message",
-    "version": "1.0.1",
-    "main": "lib/index.js",
-    "typings": "lib/index.d.ts",
-    "files": [
-        "lib",
-        "dist"
-    ],
-    "type": "commonjs",
-    "author": "dingyi222666 <dingyi222666@foxmail.com>",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/dingyi222666/koishi-plugin-better-custom-welcome-message.git",
-        "directory": "/"
-    },
-    "license": "Apache-2.0",
-    "bugs": {
-        "url": "https://github.com/dingyi222666/koishi-plugin-better-custom-welcome-message/issues"
-    },
-    "scripts": {
-    },
-    "homepage": "https://github.com/dingyi222666/koishi-plugin-better-custom-welcome-message#readme",
-    "keywords": [
-        "chatbot",
-        "koishi",
-        "plugin"
-    ],
-    "peerDependencies": {
-        "koishi": "4.14.0"
-    },
-    "koishi": {
-        "description": {
-            "zh": "比 custom-welcome-message 更好的自定义欢迎消息！（支持 markdown）"
-        }
-    },
-    "dependencies": {
-        "koishi-plugin-markdown": "^1.1.1"
+  "name": "koishi-plugin-better-custom-welcome-message",
+  "description": "better custom welcome message",
+  "version": "1.0.2",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "type": "commonjs",
+  "author": "dingyi222666 <dingyi222666@foxmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dingyi222666/koishi-plugin-better-custom-welcome-message.git",
+    "directory": "/"
+  },
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/dingyi222666/koishi-plugin-better-custom-welcome-message/issues"
+  },
+  "scripts": {},
+  "homepage": "https://github.com/dingyi222666/koishi-plugin-better-custom-welcome-message#readme",
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin"
+  ],
+  "peerDependencies": {
+    "koishi": "^4.13.0"
+  },
+  "koishi": {
+    "description": {
+      "zh": "比 custom-welcome-message 更好的自定义欢迎消息！（支持 markdown）"
     }
+  },
+  "dependencies": {
+    "koishi-plugin-markdown": "^1.1.1"
+  }
 }

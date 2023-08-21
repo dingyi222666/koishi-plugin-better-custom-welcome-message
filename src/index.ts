@@ -54,7 +54,7 @@ export const Config: Schema<Config> = Schema.intersect([
             Schema.any().hidden()
         ]).role('computed').default(0).description('欢迎消息选择器'),
         leave_group_selector: Schema.union([
-            Schema.natural(), ,
+            Schema.natural(),
             Schema.any().hidden()
         ]).role('computed').default(0).description('离开消息选择器'),
     }).description('群组配置'),
@@ -80,7 +80,7 @@ export function apply(ctx: Context, config: Config) {
 
         await session.send(await formatMessage(ctx, session, message))
     })
-    
+
 
     ctx.on('guild-member-deleted', async (session) => {
         const message = await selectMessage(session, config, EventType.LEAVE)

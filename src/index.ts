@@ -97,7 +97,17 @@ export function apply(ctx: Context, config: Config) {
 async function formatMessage(ctx: Context, session: Session, markdownText: string): Promise<h[]> {
     // 预先处理一些可直接处理的变量
 
-    const groupMemberCount = (await session.bot.getGuildMemberList(session.guildId)).length
+    const groupMemberList = await session.bot.getGuildMemberList(session.guildId)
+
+    let groupMemberCount: number
+
+    //兼容旧版本
+
+    if (groupMemberList instanceof Array) {
+        groupMemberCount = groupMemberList.length
+    } else {
+        groupMemberCount = groupMemberList.data.length
+    }
 
     markdownText = markdownText.replace(/{user}/g, session.username)
         .replace(/{group}/g, session.guildName || '')

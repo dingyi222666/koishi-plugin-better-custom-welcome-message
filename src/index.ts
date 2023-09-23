@@ -1,5 +1,5 @@
 import { Awaitable, Computed, Context, Schema, Session, h } from 'koishi'
-import { transform } from "koishi-plugin-markdown"
+import { transform } from 'koishi-plugin-markdown'
 
 export const name = 'better-custom-welcome-message'
 
@@ -10,11 +10,9 @@ export interface Config {
     //  Computed<Awaitable<number>>
     welcome_group_selector: Computed<Awaitable<number>>
     leave_group_selector: Computed<Awaitable<number>>
-
 }
 
-export const usage =
-    `此插件提供了自定义群组欢迎/离开消息的功能
+export const usage = `此插件提供了自定义群组欢迎/离开消息的功能
 
 ## 消息格式
 
@@ -47,30 +45,38 @@ export const usage =
 `
 
 export const Config: Schema<Config> = Schema.intersect([
-
     Schema.object({
         welcome_group_selector: Schema.union([
             Schema.natural(),
             Schema.any().hidden()
-        ]).role('computed').default(0).description('欢迎消息选择器'),
+        ])
+            .role('computed')
+            .default(0)
+            .description('欢迎消息选择器'),
         leave_group_selector: Schema.union([
             Schema.natural(),
             Schema.any().hidden()
-        ]).role('computed').default(0).description('离开消息选择器'),
+        ])
+            .role('computed')
+            .default(0)
+            .description('离开消息选择器')
     }).description('群组配置'),
 
     Schema.object({
-        custom_welcome_messages: Schema.array(Schema.string().role("textarea")).default([
-            `{at} 欢迎 {user} 加入 {group}，送你一句话吧：{hitokoto}`,
-        ]).description('欢迎消息'),
-        custom_leave_messages: Schema.array(Schema.string().role("textarea")).default([
-            `{at} {user} 离开了 {group}。真是可惜，让我们一起祝福他吧。`,
+        custom_welcome_messages: Schema.array(Schema.string().role('textarea'))
+            .default([
+                `{at} 欢迎 {user} 加入 {group}，送你一句话吧：{hitokoto}`
+            ])
+            .description('欢迎消息'),
+        custom_leave_messages: Schema.array(
+            Schema.string().role('textarea')
+        ).default([
+            `{at} {user} 离开了 {group}。真是可惜，让我们一起祝福他吧。`
         ])
-    }).description('消息配置'),
+    }).description('消息配置')
 ])
 
 export function apply(ctx: Context, config: Config) {
-
     ctx.on('guild-member-added', async (session) => {
         const message = await selectMessage(session, config, EventType.ADD)
 
@@ -80,7 +86,6 @@ export function apply(ctx: Context, config: Config) {
 
         await session.send(await formatMessage(ctx, session, message))
     })
-
 
     ctx.on('guild-member-deleted', async (session) => {
         const message = await selectMessage(session, config, EventType.LEAVE)
@@ -93,15 +98,20 @@ export function apply(ctx: Context, config: Config) {
     })
 }
 
-
-async function formatMessage(ctx: Context, session: Session, markdownText: string): Promise<h[]> {
+async function formatMessage(
+    ctx: Context,
+    session: Session,
+    markdownText: string
+): Promise<h[]> {
     // 预先处理一些可直接处理的变量
 
-    const groupMemberList = await session.bot.getGuildMemberList(session.guildId)
+    const groupMemberList = await session.bot.getGuildMemberList(
+        session.guildId
+    )
 
     let groupMemberCount: number
 
-    //兼容旧版本
+    // 兼容旧版本
 
     if (groupMemberList instanceof Array) {
         groupMemberCount = groupMemberList.length
@@ -109,12 +119,13 @@ async function formatMessage(ctx: Context, session: Session, markdownText: strin
         groupMemberCount = groupMemberList.data.length
     }
 
-    markdownText = markdownText.replace(/{user}/g, session.username)
+    markdownText = markdownText
+        .replace(/{user}/g, session.username)
         .replace(/{group}/g, session.guildName || '')
         .replace(/{time}/g, new Date().toLocaleString())
-        .replace(/{avatar}/g, `![avatar](${session.author.avatar})`)
-        .replace(/{id}/g, session.userId.toString())
-        .replace(/{group_id}/g, session.guildId.toString())
+        .replace(/{avatar}/g, `![avatar](${session.author?.avatar})`)
+        .replace(/{id}/g, session?.userId.toString())
+        .replace(/{group_id}/g, session.guildId?.toString())
         .replace(/{group_count}/g, groupMemberCount.toString())
         .replace(/{hitokoto}/g, await hitokoto(ctx))
 
@@ -141,7 +152,7 @@ function transformElement(session: Session, element: h, parent: h[]) {
     while (true) {
         const index = text.indexOf('{at}')
 
-        if (index == -1) {
+        if (index === -1) {
             break
         }
 
@@ -173,25 +184,33 @@ function transformElements(session: Session, element: h, parent: h[]) {
     parent.push(resultElement)
 }
 
-async function selectMessage(session: Session<never, never>, config: Config, eventType: EventType) {
+async function selectMessage(
+    session: Session<never, never>,
+    config: Config,
+    eventType: EventType
+) {
+    const messages =
+        eventType === EventType.ADD
+            ? config.custom_welcome_messages
+            : config.custom_leave_messages
 
-    const messages = eventType == EventType.ADD ? config.custom_welcome_messages : config.custom_leave_messages
-
-    if (messages.length == 0) {
+    if (messages.length === 0) {
         return
     }
 
-    const selector = eventType == EventType.ADD ? config.welcome_group_selector : config.leave_group_selector
+    const selector =
+        eventType === EventType.ADD
+            ? config.welcome_group_selector
+            : config.leave_group_selector
 
     const index = await session.resolve(selector)
 
-    if (index == 0) {
+    if (index === 0) {
         return messages[Math.floor(Math.random() * messages.length)]
     } else {
         return messages?.[index - 1] ?? messages[0]
     }
 }
-
 
 async function hitokoto(ctx: Context) {
     for (let i = 0; i < 3; i++) {
@@ -199,7 +218,7 @@ async function hitokoto(ctx: Context) {
             const response = await ctx.http.get('https://v1.hitokoto.cn')
             return response.hitokoto
         } catch (e) {
-            if (i == 2) {
+            if (i === 2) {
                 throw e
             }
         }
@@ -207,5 +226,6 @@ async function hitokoto(ctx: Context) {
 }
 
 enum EventType {
-    ADD = 0, LEAVE = 1
+    ADD = 0,
+    LEAVE = 1
 }

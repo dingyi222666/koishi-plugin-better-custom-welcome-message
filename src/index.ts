@@ -87,7 +87,7 @@ export function apply(ctx: Context, config: Config) {
         await session.send(await formatMessage(ctx, session, message))
     })
 
-    ctx.on('guild-member-deleted', async (session) => {
+    ctx.on('guild-member-removed', async (session) => {
         const message = await selectMessage(session, config, EventType.LEAVE)
 
         if (!message) {
@@ -121,11 +121,11 @@ async function formatMessage(
 
     markdownText = markdownText
         .replace(/{user}/g, session.username)
-        .replace(/{group}/g, session.guildName || '')
+        .replace(/{group}/g, session.event.guild.name || '')
         .replace(/{time}/g, new Date().toLocaleString())
         .replace(/{avatar}/g, `![avatar](${session.author?.avatar})`)
         .replace(/{id}/g, session?.userId.toString())
-        .replace(/{group_id}/g, session.guildId?.toString())
+        .replace(/{group_id}/g, session.event.guild.id?.toString())
         .replace(/{group_count}/g, groupMemberCount.toString())
         .replace(/{hitokoto}/g, await hitokoto(ctx))
 

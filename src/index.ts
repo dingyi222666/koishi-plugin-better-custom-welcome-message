@@ -106,7 +106,7 @@ async function formatMessage(
     // 预先处理一些可直接处理的变量
 
     const groupMemberList = await session.bot.getGuildMemberList(
-        session.guildId
+        session.event.guild?.id ?? session.guildId
     )
 
     let groupMemberCount: number

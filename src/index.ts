@@ -1,4 +1,4 @@
-import { Awaitable, Computed, Context, Schema, Session, h } from 'koishi'
+import { Awaitable, Computed, Context, h, Schema, Session } from 'koishi'
 import { transform } from 'koishi-plugin-markdown'
 
 export const name = 'better-custom-welcome-message'
@@ -105,9 +105,11 @@ async function formatMessage(
 ): Promise<h[]> {
     // 预先处理一些可直接处理的变量
 
-    const groupMemberList = await session.bot.getGuildMemberList(
-        session.event.guild?.id ?? session.guildId
-    )
+    const guildId = session.event.guild?.id ?? session.guildId
+    const userId = session.userId ?? session.event.user.id
+    const groupName = (await session.bot.getGuild(guildId)).name ?? ''
+
+    const groupMemberList = await session.bot.getGuildMemberList(guildId)
 
     let groupMemberCount: number
 
@@ -119,13 +121,19 @@ async function formatMessage(
         groupMemberCount = groupMemberList.data.length
     }
 
+    const avatar =
+        (session.bot.platform === 'onebot' || session.bot.platform === 'red') &&
+        userId != null
+            ? `https://q.qlogo.cn/headimg_dl?dst_uin=${session.userId?.toString()}&spec=640`
+            : session.author.avatar
+
     markdownText = markdownText
         .replace(/{user}/g, session.username)
-        .replace(/{group}/g, session.event.guild.name || '')
+        .replace(/{group}/g, groupName)
         .replace(/{time}/g, new Date().toLocaleString())
-        .replace(/{avatar}/g, `![avatar](${session.author?.avatar})`)
-        .replace(/{id}/g, session?.userId.toString())
-        .replace(/{group_id}/g, session.event.guild.id?.toString())
+        .replace(/{avatar}/g, `![avatar](${avatar ?? ''})`)
+        .replace(/{id}/g, userId ?? '')
+        .replace(/{group_id}/g, guildId ?? '')
         .replace(/{group_count}/g, groupMemberCount.toString())
         .replace(/{hitokoto}/g, await hitokoto(ctx))
 

@@ -1,15 +1,15 @@
-import { Awaitable, Computed, Context, h, Schema, Session } from 'koishi'
-import { transform } from 'koishi-plugin-markdown'
+import { Awaitable, Computed, Context, h, Schema, Session } from "koishi";
+import { transform } from "koishi-plugin-markdown";
 
-export const name = 'better-custom-welcome-message'
+export const name = "better-custom-welcome-message";
 
 export interface Config {
-    custom_welcome_messages: string[]
-    custom_leave_messages: string[]
+  custom_welcome_messages: string[];
+  custom_leave_messages: string[];
 
-    //  Computed<Awaitable<number>>
-    welcome_group_selector: Computed<Awaitable<number>>
-    leave_group_selector: Computed<Awaitable<number>>
+  //  Computed<Awaitable<number>>
+  welcome_group_selector: Computed<Awaitable<number>>;
+  leave_group_selector: Computed<Awaitable<number>>;
 }
 
 export const usage = `此插件提供了自定义群组欢迎/离开消息的功能
@@ -42,198 +42,203 @@ export const usage = `此插件提供了自定义群组欢迎/离开消息的功
 ## 在指定的群组启用
 
 你可以在插件上方使用过滤器来指定在哪些群组启用此插件。
-`
+`;
 
 export const Config: Schema<Config> = Schema.intersect([
-    Schema.object({
-        welcome_group_selector: Schema.union([
-            Schema.natural(),
-            Schema.any().hidden()
-        ])
-            .role('computed')
-            .default(0)
-            .description('欢迎消息选择器'),
-        leave_group_selector: Schema.union([
-            Schema.natural(),
-            Schema.any().hidden()
-        ])
-            .role('computed')
-            .default(0)
-            .description('离开消息选择器')
-    }).description('群组配置'),
+  Schema.object({
+    welcome_group_selector: Schema.union([
+      Schema.natural(),
+      Schema.any().hidden(),
+    ])
+      .role("computed")
+      .default(0)
+      .description("欢迎消息选择器"),
+    leave_group_selector: Schema.union([
+      Schema.natural(),
+      Schema.any().hidden(),
+    ])
+      .role("computed")
+      .default(0)
+      .description("离开消息选择器"),
+  }).description("群组配置"),
 
-    Schema.object({
-        custom_welcome_messages: Schema.array(Schema.string().role('textarea'))
-            .default([
-                `{at} 欢迎 {user} 加入 {group}，送你一句话吧：{hitokoto}`
-            ])
-            .description('欢迎消息'),
-        custom_leave_messages: Schema.array(
-            Schema.string().role('textarea')
-        ).default([
-            `{at} {user} 离开了 {group}。真是可惜，让我们一起祝福他吧。`
-        ])
-    }).description('消息配置')
-])
+  Schema.object({
+    custom_welcome_messages: Schema.array(Schema.string().role("textarea"))
+      .default([`{at} 欢迎 {user} 加入 {group}，送你一句话吧：{hitokoto}`])
+      .description("欢迎消息"),
+    custom_leave_messages: Schema.array(
+      Schema.string().role("textarea"),
+    ).default([`{at} {user} 离开了 {group}。真是可惜，让我们一起祝福他吧。`]),
+  }).description("消息配置"),
+]);
 
 export function apply(ctx: Context, config: Config) {
-    ctx.on('guild-member-added', async (session) => {
-        const message = await selectMessage(session, config, EventType.ADD)
+  ctx.on("guild-member-added", async (session) => {
+    const message = await selectMessage(session, config, EventType.ADD);
 
-        if (!message) {
-            return
-        }
+    if (!message) {
+      return;
+    }
 
-        await session.send(await formatMessage(ctx, session, message))
-    })
+    await session.send(await formatMessage(ctx, session, message));
+  });
 
-    ctx.on('guild-member-removed', async (session) => {
-        const message = await selectMessage(session, config, EventType.LEAVE)
+  ctx.on("guild-member-removed", async (session) => {
+    const message = await selectMessage(session, config, EventType.LEAVE);
 
-        if (!message) {
-            return
-        }
+    if (!message) {
+      return;
+    }
 
-        await session.send(await formatMessage(ctx, session, message))
-    })
+    await session.send(await formatMessage(ctx, session, message));
+  });
 }
 
 async function formatMessage(
-    ctx: Context,
-    session: Session,
-    markdownText: string
+  ctx: Context,
+  session: Session,
+  markdownText: string,
 ): Promise<h[]> {
-    // 预先处理一些可直接处理的变量
+  // 预先处理一些可直接处理的变量
 
-    const guildId = session.event.guild?.id ?? session.guildId
-    const userId = session.userId ?? session.event.user.id
-    const groupName = (await session.bot.getGuild(guildId)).name ?? ''
+  const guildId = session.event.guild?.id ?? session.guildId;
+  const userId = session.author?.id ?? session.event.user?.id ?? session.userId;
+  const groupName =
+    (await session.bot.getGuild(guildId)).name ??
+    session.event.guild?.name ??
+    "";
 
-    const groupMemberList = await session.bot.getGuildMemberList(guildId)
+  const groupMemberList = await session.bot.getGuildMemberList(guildId);
 
-    let groupMemberCount: number
+  let groupMemberCount: number;
 
-    // 兼容旧版本
+  // 兼容旧版本
 
-    if (groupMemberList instanceof Array) {
-        groupMemberCount = groupMemberList.length
-    } else {
-        groupMemberCount = groupMemberList.data.length
-    }
+  if (groupMemberList instanceof Array) {
+    groupMemberCount = groupMemberList.length;
+  } else {
+    groupMemberCount = groupMemberList.data.length;
+  }
 
-    const avatar =
-        (session.bot.platform === 'onebot' || session.bot.platform === 'red') &&
-        userId != null
-            ? `https://q.qlogo.cn/headimg_dl?dst_uin=${session.userId?.toString()}&spec=640`
-            : session.author.avatar
+  const avatar =
+    (session.bot.platform === "onebot" || session.bot.platform === "red") &&
+    userId != null
+      ? `https://q.qlogo.cn/headimg_dl?dst_uin=${session.userId?.toString()}&spec=640`
+      : session.author.avatar;
 
-    markdownText = markdownText
-        .replace(/{user}/g, session.username)
-        .replace(/{group}/g, groupName)
-        .replace(/{time}/g, new Date().toLocaleString())
-        .replace(/{avatar}/g, `![avatar](${avatar ?? ''})`)
-        .replace(/{id}/g, userId ?? '')
-        .replace(/{group_id}/g, guildId ?? '')
-        .replace(/{group_count}/g, groupMemberCount.toString())
-        .replace(/{hitokoto}/g, await hitokoto(ctx))
+  markdownText = markdownText
+    .replace(
+      /{user}/g,
+      session.author.nick ??
+        session.author.name ??
+        session.event.user.name ??
+        session.username,
+    )
+    .replace(/{group}/g, groupName)
+    .replace(/{time}/g, new Date().toLocaleString())
+    .replace(/{avatar}/g, `![avatar](${avatar ?? ""})`)
+    .replace(/{id}/g, userId ?? "")
+    .replace(/{group_id}/g, guildId ?? "")
+    .replace(/{group_count}/g, groupMemberCount.toString())
+    .replace(/{hitokoto}/g, await hitokoto(ctx));
 
-    const transformed = transform(markdownText)
+  const transformed = transform(markdownText);
 
-    const finalElements: h[] = []
+  const finalElements: h[] = [];
 
-    for (const element of transformed) {
-        transformElements(session, element, finalElements)
-    }
+  for (const element of transformed) {
+    transformElements(session, element, finalElements);
+  }
 
-    return finalElements
+  return finalElements;
 }
 
 function transformElement(session: Session, element: h, parent: h[]) {
-    if (element.type !== 'text') {
-        return
+  if (element.type !== "text") {
+    return;
+  }
+
+  let text = element.attrs.content as string;
+
+  // 匹配第一个 {at}，并且把之前和之后的都分开，然后一次次循环替换直到没有 {at} 为止
+
+  while (true) {
+    const index = text.indexOf("{at}");
+
+    if (index === -1) {
+      break;
     }
 
-    let text = element.attrs.content as string
+    const before = text.slice(0, index);
+    const after = text.slice(index + 4);
 
-    // 匹配第一个 {at}，并且把之前和之后的都分开，然后一次次循环替换直到没有 {at} 为止
+    parent.push(h.text(before));
+    parent.push(h.at(session.userId));
 
-    while (true) {
-        const index = text.indexOf('{at}')
-
-        if (index === -1) {
-            break
-        }
-
-        const before = text.slice(0, index)
-        const after = text.slice(index + 4)
-
-        parent.push(h.text(before))
-        parent.push(h.at(session.userId))
-
-        text = after
-    }
-    parent.push(h.text(text))
+    text = after;
+  }
+  parent.push(h.text(text));
 }
 
 function transformElements(session: Session, element: h, parent: h[]) {
-    if (element.type === 'text') {
-        transformElement(session, element, parent)
-        return
-    }
-    const resultElement: h = h.jsx(element.type, element.attrs)
+  if (element.type === "text") {
+    transformElement(session, element, parent);
+    return;
+  }
+  const resultElement: h = h.jsx(element.type, element.attrs);
 
-    resultElement.children = []
-    resultElement.source = element.source
+  resultElement.children = [];
+  resultElement.source = element.source;
 
-    for (const child of element.children) {
-        transformElements(session, child, resultElement.children)
-    }
+  for (const child of element.children) {
+    transformElements(session, child, resultElement.children);
+  }
 
-    parent.push(resultElement)
+  parent.push(resultElement);
 }
 
 async function selectMessage(
-    session: Session<never, never>,
-    config: Config,
-    eventType: EventType
+  session: Session<never, never>,
+  config: Config,
+  eventType: EventType,
 ) {
-    const messages =
-        eventType === EventType.ADD
-            ? config.custom_welcome_messages
-            : config.custom_leave_messages
+  const messages =
+    eventType === EventType.ADD
+      ? config.custom_welcome_messages
+      : config.custom_leave_messages;
 
-    if (messages.length === 0) {
-        return
-    }
+  if (messages.length === 0) {
+    return;
+  }
 
-    const selector =
-        eventType === EventType.ADD
-            ? config.welcome_group_selector
-            : config.leave_group_selector
+  const selector =
+    eventType === EventType.ADD
+      ? config.welcome_group_selector
+      : config.leave_group_selector;
 
-    const index = await session.resolve(selector)
+  const index = await session.resolve(selector);
 
-    if (index === 0) {
-        return messages[Math.floor(Math.random() * messages.length)]
-    } else {
-        return messages?.[index - 1] ?? messages[0]
-    }
+  if (index === 0) {
+    return messages[Math.floor(Math.random() * messages.length)];
+  } else {
+    return messages?.[index - 1] ?? messages[0];
+  }
 }
 
 async function hitokoto(ctx: Context) {
-    for (let i = 0; i < 3; i++) {
-        try {
-            const response = await ctx.http.get('https://v1.hitokoto.cn')
-            return response.hitokoto
-        } catch (e) {
-            if (i === 2) {
-                throw e
-            }
-        }
+  for (let i = 0; i < 3; i++) {
+    try {
+      const response = await ctx.http.get("https://v1.hitokoto.cn");
+      return response.hitokoto;
+    } catch (e) {
+      if (i === 2) {
+        throw e;
+      }
     }
+  }
 }
 
 enum EventType {
-    ADD = 0,
-    LEAVE = 1
+  ADD = 0,
+  LEAVE = 1,
 }

@@ -68,7 +68,7 @@ export const Config: Schema<Config> = Schema.intersect([
       .description("欢迎消息"),
     custom_leave_messages: Schema.array(
       Schema.string().role("textarea"),
-    ).default([`{at} {user} 离开了 {group}。真是可惜，让我们一起祝福他吧。`]),
+    ).default([`{user} 离开了 {group}。真是可惜，让我们一起祝福他吧。`]),
   }).description("消息配置"),
 ]);
 
@@ -129,10 +129,10 @@ async function formatMessage(
   markdownText = markdownText
     .replace(
       /{user}/g,
-      session.author.nick ??
-        session.author.name ??
-        session.event.user.name ??
-        session.username,
+      getNotEmptyText(session.author.nick,
+        session.author.name,
+        session.event.user.name,
+        session.username),
     )
     .replace(/{group}/g, groupName)
     .replace(/{time}/g, new Date().toLocaleString())
@@ -223,6 +223,15 @@ async function selectMessage(
   } else {
     return messages?.[index - 1] ?? messages[0];
   }
+}
+
+function getNotEmptyText(...texts: string[]) {
+  for (const text of texts) {
+    if (text != null && text.length > 0) {
+      return text;
+    }
+  }
+  return "";
 }
 
 async function hitokoto(ctx: Context) {

@@ -131,8 +131,10 @@ async function formatMessage(
       /{user}/g,
       getNotEmptyText(
         session.userId?.toString(),
-        session.event.user?.nick,
-        session.event.user?.name,
+        session.event?.member?.nick,
+        session.event?.member?.name,
+        session.event?.user?.nick,
+        session.event?.user?.name,
         session.author?.nick,
         session.author?.name,
         session.username,

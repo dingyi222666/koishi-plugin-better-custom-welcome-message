@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-better-custom-welcome-message",
   "description": "better custom welcome message",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "main": "lib/index.cjs",
   "module": "lib/index.mjs",
   "typings": "lib/index.d.ts",
@@ -35,7 +35,7 @@
     "plugin"
   ],
   "peerDependencies": {
-    "koishi": "^4.17.9"
+    "koishi": "^4.17.0"
   },
   "koishi": {
     "description": {

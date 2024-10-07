@@ -120,30 +120,30 @@ async function formatMessage(
     groupMemberCount = groupMemberList.data.length;
   }
 
-  // 我没意见
-  let userName = await session.bot
-    .getGuildMember(guildId, userId)
-    .then((member) => {
-      return getNotEmptyText(
-        userId,
-        member.nick,
-        member.name,
-        member.user?.nick,
-        member.user?.name,
-      );
-    });
+  let userName = getNotEmptyText(
+    userId,
+    session.event?.member?.nick,
+    session.event?.member?.name,
+    session.event?.user?.nick,
+    session.event?.user?.name,
+    session.author?.nick,
+    session.author?.name,
+    session.username,
+  );
 
   if (userName === userId) {
-    userName = getNotEmptyText(
-      userId,
-      session.event?.member?.nick,
-      session.event?.member?.name,
-      session.event?.user?.nick,
-      session.event?.user?.name,
-      session.author?.nick,
-      session.author?.name,
-      session.username,
-    );
+    // 我没意见
+    userName = await session.bot
+      .getGuildMember(guildId, userId)
+      .then((member) => {
+        return getNotEmptyText(
+          userId,
+          member.nick,
+          member.name,
+          member.user?.nick,
+          member.user?.name,
+        );
+      });
   }
 
   const avatar =

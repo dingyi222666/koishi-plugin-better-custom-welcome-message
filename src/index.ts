@@ -120,27 +120,40 @@ async function formatMessage(
     groupMemberCount = groupMemberList.data.length;
   }
 
+  // 我没意见
+  let userName = await session.bot
+    .getGuildMember(guildId, userId)
+    .then((member) => {
+      return getNotEmptyText(
+        userId,
+        member.nick,
+        member.name,
+        member.user?.nick,
+        member.user?.name,
+      );
+    });
+
+  if (userName === userId) {
+    userName = getNotEmptyText(
+      userId,
+      session.event?.member?.nick,
+      session.event?.member?.name,
+      session.event?.user?.nick,
+      session.event?.user?.name,
+      session.author?.nick,
+      session.author?.name,
+      session.username,
+    );
+  }
+
   const avatar =
     (session.bot.platform === "onebot" || session.bot.platform === "red") &&
     userId != null
-      ? `https://q.qlogo.cn/headimg_dl?dst_uin=${session.userId?.toString()}&spec=640`
+      ? `https://q.qlogo.cn/headimg_dl?dst_uin=${userId}&spec=640`
       : session.author.avatar;
 
   markdownText = markdownText
-    .replace(
-      /{user}/g,
-      getNotEmptyText(
-        session.userId?.toString(),
-        session.event?.member?.nick,
-        session.event?.member?.name,
-        session.event?.user?.nick,
-        session.event?.user?.name,
-        session.author?.nick,
-        session.author?.name,
-        session.username,
-        session.userId?.toString(),
-      ),
-    )
+    .replace(/{user}/g, userName)
     .replace(/{group}/g, groupName)
     .replace(/{time}/g, new Date().toLocaleString())
     .replace(/{avatar}/g, `![avatar](${avatar ?? ""})`)

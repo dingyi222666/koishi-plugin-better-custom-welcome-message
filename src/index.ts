@@ -129,10 +129,15 @@ async function formatMessage(
   markdownText = markdownText
     .replace(
       /{user}/g,
-      getNotEmptyText(session.author.nick,
-        session.author.name,
-        session.event.user.name,
-        session.username),
+      getNotEmptyText(
+        session.userId?.toString(),
+        session.event.user?.nick,
+        session.event.user?.name,
+        session.author?.nick,
+        session.author?.name,
+        session.username,
+        session.userId?.toString(),
+      ),
     )
     .replace(/{group}/g, groupName)
     .replace(/{time}/g, new Date().toLocaleString())
@@ -225,13 +230,13 @@ async function selectMessage(
   }
 }
 
-function getNotEmptyText(...texts: string[]) {
+function getNotEmptyText(defaultName: string, ...texts: string[]) {
   for (const text of texts) {
-    if (text != null && text.length > 0) {
+    if (text != null && text.length > 0 && text !== defaultName) {
       return text;
     }
   }
-  return "";
+  return defaultName;
 }
 
 async function hitokoto(ctx: Context) {

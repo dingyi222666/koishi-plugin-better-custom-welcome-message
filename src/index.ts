@@ -80,7 +80,12 @@ export function apply(ctx: Context, config: Config) {
       return;
     }
 
-    await session.send(await formatMessage(ctx, session, message));
+    if (session.channelId) {
+      await session.send(await formatMessage(ctx, session, message));
+    } else {
+      // TODO: 两级群组适配
+      await session.bot.sendMessage(session.guildId, await formatMessage(ctx, session, message));
+    }
   });
 
   ctx.on("guild-member-removed", async (session) => {
@@ -90,7 +95,12 @@ export function apply(ctx: Context, config: Config) {
       return;
     }
 
-    await session.send(await formatMessage(ctx, session, message));
+    if (session.channelId) {
+      await session.send(await formatMessage(ctx, session, message));
+    } else {
+      // TODO: 两级群组适配
+      await session.bot.sendMessage(session.guildId, await formatMessage(ctx, session, message));
+    }
   });
 }
 

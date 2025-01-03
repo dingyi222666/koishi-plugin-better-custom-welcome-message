@@ -158,7 +158,7 @@ async function formatMessage(
 
   const avatar =
     (session.bot.platform === "onebot" || session.bot.platform === "red") &&
-      userId != null
+    userId != null
       ? `https://q.qlogo.cn/headimg_dl?dst_uin=${userId}&spec=640`
       : session.author.avatar;
 

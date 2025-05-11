@@ -84,7 +84,10 @@ export function apply(ctx: Context, config: Config) {
       await session.send(await formatMessage(ctx, session, message));
     } else {
       // TODO: 两级群组适配
-      await session.bot.sendMessage(session.guildId, await formatMessage(ctx, session, message));
+      await session.bot.sendMessage(
+        session.guildId,
+        await formatMessage(ctx, session, message),
+      );
     }
   });
 
@@ -99,7 +102,10 @@ export function apply(ctx: Context, config: Config) {
       await session.send(await formatMessage(ctx, session, message));
     } else {
       // TODO: 两级群组适配
-      await session.bot.sendMessage(session.guildId, await formatMessage(ctx, session, message));
+      await session.bot.sendMessage(
+        session.guildId,
+        await formatMessage(ctx, session, message),
+      );
     }
   });
 }
@@ -142,18 +148,22 @@ async function formatMessage(
   );
 
   if (userName === userId) {
-    // 我没意见
-    userName = await session.bot
-      .getGuildMember(guildId, userId)
-      .then((member) => {
-        return getNotEmptyText(
-          userId,
-          member.nick,
-          member.name,
-          member.user?.nick,
-          member.user?.name,
-        );
-      });
+    try {
+      // 我没意见
+      userName = await session.bot
+        .getGuildMember(guildId, userId)
+        .then((member) => {
+          return getNotEmptyText(
+            userId,
+            member.nick,
+            member.name,
+            member.user?.nick,
+            member.user?.name,
+          );
+        });
+    } catch (e) {
+      // 如果获取失败，则使用默认昵称
+    }
   }
 
   const avatar =

@@ -46,18 +46,12 @@ export const usage = `此插件提供了自定义群组欢迎/离开消息的功
 
 export const Config: Schema<Config> = Schema.intersect([
   Schema.object({
-    welcome_group_selector: Schema.union([
-      Schema.natural(),
-      Schema.any().hidden(),
-    ])
-      .role("computed")
+    welcome_group_selector: Schema.natural()
+      .computed()
       .default(0)
       .description("欢迎消息选择器"),
-    leave_group_selector: Schema.union([
-      Schema.natural(),
-      Schema.any().hidden(),
-    ])
-      .role("computed")
+    leave_group_selector: Schema.natural()
+      .computed()
       .default(0)
       .description("离开消息选择器"),
   }).description("群组配置"),

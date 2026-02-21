@@ -173,8 +173,11 @@ async function formatMessage(
     .replace(/{avatar}/g, `![avatar](${avatar ?? ""})`)
     .replace(/{id}/g, userId ?? "")
     .replace(/{group_id}/g, guildId ?? "")
-    .replace(/{group_count}/g, groupMemberCount.toString())
-    .replace(/{hitokoto}/g, await hitokoto(ctx));
+    .replace(/{group_count}/g, groupMemberCount.toString());
+
+  if (markdownText.includes("{hitokoto}")) {
+    markdownText = markdownText.replace(/{hitokoto}/g, await hitokoto(ctx));
+  }
 
   const transformed = transform(markdownText);
 
